@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Thiệp 20/10</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      height: 100vh;
+      font-family: 'Segoe Script', cursive, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #ffe6eb, #ffd6dc);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .card, .messages, .camera-section {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: #fff0f5;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      padding: 5%;
+      width: 95%;
+      max-width: 480px;
+      min-height: 70%;
+      transition: transform 0.8s ease, opacity 0.8s ease;
+      backface-visibility: hidden;
+    }
+
+    .card.active, .messages.active, .camera-section.active {
+      display: flex;
+      animation: fadeIn 0.7s ease;
+    }
+
+    .card.flipped {
+      transform: rotateY(180deg);
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+
+    button {
+      background: linear-gradient(135deg, #ff9aaf, #ff7f99);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: 0.3s;
+      width: 60%;
+      max-width: 220px;
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, #ff7f99, #ff9aaf);
+      transform: translateY(-2px);
+    }
+
+    h1 {
+      color: #cc2b52;
+      margin-bottom: 12px;
+      font-size: 28px;
+    }
+
+    p {
+      font-size: 17px;
+      color: #802244;
+      line-height: 1.5;
+      margin-top: 10px;
+    }
+
+    video, canvas {
+      border-radius: 12px;
+      max-width: 100%;
+      height: auto;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card active" id="card">
+    <h1>💌 Thiệp 20/10</h1>
+    <p>Gửi đến mẹ yêu thương – món quà nhỏ chan chứa tình cảm.</p>
+    <button onclick="flipCard()">Mở thiệp</button>
+  </div>
+
+  <div class="messages" id="messages">
+    <h1>Lời chúc</h1>
+    <p id="messageText"></p>
+    <button onclick="nextMessage()">Tiếp theo</button>
+  </div>
+
+  <div class="camera-section" id="cameraSection">
+    <h1>🌹 Chụp ảnh cùng mẹ</h1>
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+    <button id="captureBtn" onclick="capturePhoto()">Chụp ảnh</button>
+    <button id="retakeBtn" style="display:none;" onclick="retakePhoto()">Chụp lại</button>
+    <button id="saveBtn" style="display:none;" onclick="savePhoto()">Lưu ảnh</button>
+  </div>
+
+  <script>
+    const card = document.getElementById('card');
+    const messagesDiv = document.getElementById('messages');
+    const messageText = document.getElementById('messageText');
+    const cameraSection = document.getElementById('cameraSection');
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const captureBtn = document.getElementById('captureBtn');
+    const retakeBtn = document.getElementById('retakeBtn');
+    const saveBtn = document.getElementById('saveBtn');
+
+    const messages = [
+      "Mẹ là ánh sáng soi đường, là bến bờ bình yên nhất của con.",
+      "Nhân ngày 20/10, con chúc mẹ mãi khỏe mạnh, tươi trẻ và hạnh phúc.",
+      "Cảm ơn mẹ vì tất cả tình yêu thương và hy sinh lặng lẽ dành cho con.",
+      "             Con Bi và Sâu luôn yêu mẹ rất nhiều. ❤️❤️❤️           "
+    ];
+
+    let currentIndex = 0;
+
+    function flipCard() {
+      card.classList.add('flipped');
+      setTimeout(() => {
+        card.classList.remove('active', 'flipped');
+        messagesDiv.classList.add('active');
+        showMessage();
+      }, 800);
+    }
+
+    function showMessage() {
+      messageText.textContent = messages[currentIndex];
+    }
+
+    function nextMessage() {
+      currentIndex++;
+      if (currentIndex < messages.length) {
+        showMessage();
+      } else {
+        messagesDiv.classList.remove('active');
+        openCamera();
+      }
+    }
+
+    async function openCamera() {
+      cameraSection.classList.add('active');
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+        video.srcObject = stream;
+      } catch (err) {
+        alert('Không thể mở camera: ' + err.message);
+      }
+    }
+
+    function capturePhoto() {
+      const context = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0);
+
+      // Vẽ chữ chúc mừng
+      context.fillStyle = '#ff2b6b';
+      context.font = '48px Segoe Script';
+      context.textAlign = 'center';
+      context.shadowColor = 'rgba(0,0,0,0.3)';
+      context.shadowBlur = 6;
+      context.fillText('Chúc mừng mẹ 20/10', canvas.width / 2, 60);
+
+      canvas.style.display = 'block';
+      video.style.display = 'none';
+      captureBtn.style.display = 'none';
+      retakeBtn.style.display = 'inline-block';
+      saveBtn.style.display = 'inline-block';
+    }
+
+    function retakePhoto() {
+      canvas.style.display = 'none';
+      video.style.display = 'block';
+      captureBtn.style.display = 'inline-block';
+      retakeBtn.style.display = 'none';
+      saveBtn.style.display = 'none';
+    }
+
+    function savePhoto() {
+      const link = document.createElement('a');
+      link.download = 'thiep_20_10.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+  </script>
+</body>
+</html>
